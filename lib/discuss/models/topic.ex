@@ -7,6 +7,7 @@ defmodule Discuss.Topic do
 
   schema "topics" do
     field :title, :string
+    belongs_to :user, Discuss.User
   end
 
   def where(params) do
@@ -17,7 +18,7 @@ defmodule Discuss.Topic do
 
   def changeset(topic, params \\ %{}) do
     topic
-    |> Ecto.Changeset.cast(params, [:title])
-    |> Ecto.Changeset.validate_required([:title])
+    |> Ecto.Changeset.cast(params, [:title, :user_id])
+    |> Ecto.Changeset.validate_required([:title, :user_id])
   end
 end

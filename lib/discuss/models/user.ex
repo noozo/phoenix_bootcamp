@@ -10,6 +10,7 @@ defmodule Discuss.User do
     field :name, :string
     field :provider, :string
     field :token, :string
+    has_many :topics, Discuss.Topic
 
     timestamps()
   end
@@ -22,7 +23,7 @@ defmodule Discuss.User do
 
   def changeset(user, params \\ %{}) do
     user
-    |> Ecto.Changeset.cast(params, [:email, :name, :provider, :token])
+    |> Ecto.Changeset.cast(params, [:email, :name, :provider, :token, :topics])
     |> Ecto.Changeset.validate_required([:email, :name, :provider, :token])
   end
 end
