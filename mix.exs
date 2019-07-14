@@ -46,7 +46,7 @@ defmodule Discuss.MixProject do
       {:ueberauth, "~> 0.6.1"},
       {:ueberauth_github, "~> 0.4"},
       # Required by uerberauth
-      {:poison, "~> 3.1"}
+      {:poison, "~> 3.1", override: true}
     ]
   end
 

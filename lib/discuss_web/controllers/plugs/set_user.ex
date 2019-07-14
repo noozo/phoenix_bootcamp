@@ -2,7 +2,7 @@ defmodule DiscussWeb.Plugs.SetUser do
   import Plug.Conn
 
   alias Discuss.Repo
-  alias Discuss.User
+  alias Discuss.Accounts.User
 
   # NOTE: Return of this function is passed to the call function
   def init(default), do: default

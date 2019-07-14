@@ -33,7 +33,8 @@ import_config "#{Mix.env()}.exs"
 config :ueberauth, Ueberauth,
   providers: [
     github: {Ueberauth.Strategy.Github, []}
-  ]
+  ],
+  json_library: Jason
 
 config :ueberauth, Ueberauth.Strategy.Github.OAuth,
   client_id: "dd8c61c1b607b0141a4c",

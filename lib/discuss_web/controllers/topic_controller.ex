@@ -1,13 +1,15 @@
 defmodule DiscussWeb.TopicController do
   use DiscussWeb, :controller
 
-  alias Discuss.Topic
-  alias Discuss.Repo
+  alias Discuss.Discussions
+  alias Discuss.Discussions.Topic
+  alias DiscussWeb.Router.Helpers
 
   plug DiscussWeb.Plugs.RequireAuth when action not in [:index, :show]
+  plug :check_topic_owner when action in [:edit, :update, :delete]
 
   def index(conn, _params) do
-    render(conn, "index.html", topics: Repo.all(Topic))
+    render(conn, "index.html", topics: Discussions.list_topics())
   end
 
   @spec new(Plug.Conn.t(), any) :: Plug.Conn.t()
@@ -17,14 +19,7 @@ defmodule DiscussWeb.TopicController do
 
   @spec create(Plug.Conn.t(), map) :: Plug.Conn.t()
   def create(conn, %{"topic" => attributes}) do
-    changeset =
-      conn.assigns.user
-      |> build_assoc(:topics)
-      |> Topic.changeset(attributes)
-
-    IO.inspect(changeset)
-
-    case Repo.insert(changeset) do
+    case Discussions.create_topic(attributes, conn.assigns.user) do
       {:ok, _topic} ->
         conn
         |> put_flash(:info, "Topic Created")
@@ -36,16 +31,15 @@ defmodule DiscussWeb.TopicController do
   end
 
   def edit(conn, %{"id" => id}) do
-    topic = Repo.get(Topic, id)
+    topic = Discussions.get_topic!(id)
 
     render(conn, "edit.html", changeset: Topic.changeset(topic), topic: topic)
   end
 
   def update(conn, %{"id" => id, "topic" => attributes}) do
-    topic = Repo.get(Topic, id)
-    changeset = Topic.changeset(topic, attributes)
+    topic = Discussions.get_topic!(id)
 
-    case Repo.update(changeset) do
+    case Discussions.update_topic(topic, attributes) do
       {:ok, _topic} ->
         conn
         |> put_flash(:info, "Topic Updated")
@@ -57,14 +51,25 @@ defmodule DiscussWeb.TopicController do
   end
 
   def show(conn, %{"id" => id}) do
-    render(conn, "show.html", topic: Repo.get(Topic, id))
+    render(conn, "show.html", topic: Discussions.get_topic!(id))
   end
 
   def delete(conn, %{"id" => id}) do
-    Repo.get!(Topic, id) |> Repo.delete!()
+    Discussions.get_topic!(id) |> Discussions.delete_topic()
 
     conn
     |> put_flash(:info, "Topic Deleted")
     |> redirect(to: Routes.topic_path(conn, :index))
+  end
+
+  def check_topic_owner(%{params: %{"id" => topic_id}} = conn, _default) do
+    if Discussions.get_topic!(topic_id).user_id == conn.assigns.user.id do
+      conn
+    else
+      conn
+      |> put_flash(:error, "That topic does not belong to you")
+      |> redirect(to: Helpers.topic_path(conn, :index))
+      |> halt()
+    end
   end
 end
